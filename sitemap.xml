@@ -11,6 +11,15 @@
   </url>
   
   <url>
+    <loc>https://mementomori.com.cn/schedule/index.html</loc>
+    
+    <lastmod>2024-05-29</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://mementomori.com.cn/about/index.html</loc>
     
     <lastmod>2024-05-28</lastmod>
@@ -41,24 +50,6 @@
     <loc>https://mementomori.com.cn/home/index.html</loc>
     
     <lastmod>2024-05-26</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://mementomori.com.cn/schedule/index.html</loc>
-    
-    <lastmod>2024-05-25</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://mementomori.com.cn/resources/index.html</loc>
-    
-    <lastmod>2024-05-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
