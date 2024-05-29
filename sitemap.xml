@@ -2,9 +2,9 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://mementomori.com.cn/diary/index.html</loc>
+    <loc>https://mementomori.com.cn/works/index.html</loc>
     
-    <lastmod>2024-05-28</lastmod>
+    <lastmod>2024-05-29</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -30,24 +30,6 @@
   
   <url>
     <loc>https://mementomori.com.cn/2024/05/23/hello-world/</loc>
-    
-    <lastmod>2024-05-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://mementomori.com.cn/diary/index-1.html</loc>
-    
-    <lastmod>2024-05-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://mementomori.com.cn/works/index.html</loc>
     
     <lastmod>2024-05-27</lastmod>
     
@@ -103,7 +85,7 @@
 
   <url>
     <loc>https://mementomori.com.cn/</loc>
-    <lastmod>2024-05-28</lastmod>
+    <lastmod>2024-05-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -113,7 +95,7 @@
   
   <url>
     <loc>https://mementomori.com.cn/categories/works/</loc>
-    <lastmod>2024-05-28</lastmod>
+    <lastmod>2024-05-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
