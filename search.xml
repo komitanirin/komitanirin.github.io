@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>For my first diary</title>
-    <url>/2024/05/28/For-my-first-diary/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
     <title>Hello World</title>
     <url>/2024/05/23/hello-world/</url>
     <content><![CDATA[<p>测试</p>
@@ -25,5 +20,10 @@
       <categories>
         <category>-works</category>
       </categories>
+  </entry>
+  <entry>
+    <title>For my first diary</title>
+    <url>/2024/05/28/For-my-first-diary/</url>
+    <content><![CDATA[]]></content>
   </entry>
 </search>
