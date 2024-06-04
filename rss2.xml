@@ -9,45 +9,28 @@
     <atom:link href="https://mementomori.com.cn/rss2.xml" rel="self" type="application/rss+xml"/>
     
     <description>for Rin</description>
-    <pubDate>Tue, 28 May 2024 03:48:46 GMT</pubDate>
+    <pubDate>Tue, 04 Jun 2024 15:08:25 GMT</pubDate>
     <generator>http://hexo.io/</generator>
     
     <item>
-      <title>For my first diary</title>
-      <link>https://mementomori.com.cn/2024/05/28/For-my-first-diary/</link>
-      <guid>https://mementomori.com.cn/2024/05/28/For-my-first-diary/</guid>
-      <pubDate>Tue, 28 May 2024 03:48:26 GMT</pubDate>
+      <title>Foreword</title>
+      <link>https://mementomori.com.cn/2024/06/04/Foreword/</link>
+      <guid>https://mementomori.com.cn/2024/06/04/Foreword/</guid>
+      <pubDate>Tue, 04 Jun 2024 14:56:11 GMT</pubDate>
+      
+        
+        
+      <description>&lt;p&gt;如果六级词汇还没变得陌生，Foreword指的是前言的意思吧。搭建博客时令我费心的不是样式，而是内容的分类，对于自己人生，究竟该如何划分呈现才显得不至于让他人，让自己唾弃呢？不过思来想去，这故作伤感的生活点点滴滴也会沾污的污水一样，被自己下意识的拭去吧。自己从未幻想过雨后结</description>
+        
+      
+      
+      
+      <content:encoded><![CDATA[<p>如果六级词汇还没变得陌生，Foreword指的是前言的意思吧。搭建博客时令我费心的不是样式，而是内容的分类，对于自己人生，究竟该如何划分呈现才显得不至于让他人，让自己唾弃呢？不过思来想去，这故作伤感的生活点点滴滴也会沾污的污水一样，被自己下意识的拭去吧。自己从未幻想过雨后结晶的奇迹，不过还恳求允许我把遗书称作告白信吧，不然撞见遗书二字，除了给予人一种将死末路的印象的恐怖，似乎别无他物，只得让我稍加伪装，请权当单相思女子的痴情，像对待不被看在眼中的追求信，回绝我这封告白信吧，若是写给自己的信，我也同样应当给予拒绝，不是吗？</p>]]></content:encoded>
       
       
       
       
-      
-      
-      <comments>https://mementomori.com.cn/2024/05/28/For-my-first-diary/#disqus_thread</comments>
-      
-    </item>
-    
-    <item>
-      <title>Hello World</title>
-      <link>https://mementomori.com.cn/2024/05/23/hello-world/</link>
-      <guid>https://mementomori.com.cn/2024/05/23/hello-world/</guid>
-      <pubDate>Thu, 23 May 2024 08:57:02 GMT</pubDate>
-      
-      <description>&lt;p&gt;测试&lt;/p&gt;
-&lt;h2 id&gt;&lt;a href=&quot;#&quot; class=&quot;headerlink&quot; title&gt;&lt;/a&gt;&lt;/h2&gt;&lt;h3 id=&quot;Create-a-new-post&quot;&gt;&lt;a href=&quot;#Create-a-new-post&quot; class=&quot;headerlink&quot; title=&quot;Create a new post&quot;&gt;&lt;/a&gt;Create a new post&lt;/h3&gt;&lt;figure class=&quot;highlight bash&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ hexo new &lt;span class=&quot;string&quot;&gt;&amp;quot;My New Post&amp;quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-
-&lt;p&gt;More info: &lt;a href=&quot;https://hexo.io/docs/writing.html&quot;&gt;Writing&lt;/a&gt;&lt;/p&gt;</description>
-      
-      
-      
-      <content:encoded><![CDATA[<p>测试</p><h2 id=""><a href="#" class="headerlink" title=""></a></h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content:encoded>
-      
-      
-      <category domain="https://mementomori.com.cn/categories/works/">-works</category>
-      
-      
-      
-      <comments>https://mementomori.com.cn/2024/05/23/hello-world/#disqus_thread</comments>
+      <comments>https://mementomori.com.cn/2024/06/04/Foreword/#disqus_thread</comments>
       
     </item>
     

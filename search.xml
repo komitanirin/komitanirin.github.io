@@ -1,29 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>For my first diary</title>
-    <url>/2024/05/28/For-my-first-diary/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2024/05/23/hello-world/</url>
-    <content><![CDATA[<p>测试</p>
-<h2 id=""><a href="#" class="headerlink" title=""></a></h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+    <title>Foreword</title>
+    <url>/2024/06/04/Foreword/</url>
+    <content><![CDATA[<p>如果六级词汇还没变得陌生，Foreword指的是前言的意思吧。搭建博客时令我费心的不是样式，而是内容的分类，对于自己人生，究竟该如何划分呈现才显得不至于让他人，让自己唾弃呢？不过思来想去，这故作伤感的生活点点滴滴也会沾污的污水一样，被自己下意识的拭去吧。自己从未幻想过雨后结晶的奇迹，不过还恳求允许我把遗书称作告白信吧，不然撞见遗书二字，除了给予人一种将死末路的印象的恐怖，似乎别无他物，只得让我稍加伪装，请权当单相思女子的痴情，像对待不被看在眼中的追求信，回绝我这封告白信吧，若是写给自己的信，我也同样应当给予拒绝，不是吗？</p>
 ]]></content>
-      <categories>
-        <category>-works</category>
-      </categories>
   </entry>
 </search>
