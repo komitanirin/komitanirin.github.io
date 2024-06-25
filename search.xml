@@ -47,6 +47,725 @@
 ]]></content>
   </entry>
   <entry>
+    <title>字符串深度解析</title>
+    <url>/2024/06/24/%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90/</url>
+    <content><![CDATA[<h1 id="NET-中的字符编码"><a href="#NET-中的字符编码" class="headerlink" title=".NET 中的字符编码"></a>.NET 中的字符编码</h1><h2 id="string-和-char-类型"><a href="#string-和-char-类型" class="headerlink" title="string 和 char 类型"></a>string 和 char 类型</h2><p><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string">string</a> 类的实例表示一些文本。 string 在逻辑上是一个 16 位值的序列，其中每个值都是 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.char">char</a> 结构的实例。 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.length#system-string-length">string.Length</a> 属性返回 string 实例中 char 实例的数目。</p>
+<h3 id="char类型"><a href="#char类型" class="headerlink" title="char类型"></a>char类型</h3><p>字符 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.char">char</a> 表示为 Unicode字符，在C#中用 UTF-16 编码表示，占用2个字节（16位）大小，字面量用单引号’’包裹</p>
+<ul>
+<li>char 是值类型（结构体），以16位整数形式存储，char可隐式转换为int。</li>
+<li>字符串可以看做是char序列（数组），数组为引用类型，所以字符串是引用类型。</li>
+</ul>
+<p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718177099911-f691e340-623e-4ce4-999f-9f8f8d305168.png" alt="img"></p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str = <span class="string">&quot;Hello World&quot;</span>;</span><br><span class="line">Console.WriteLine(str[<span class="number">0</span>]);  <span class="comment">//H</span></span><br><span class="line">Console.WriteLine(str[<span class="number">10</span>]); <span class="comment">//d</span></span><br><span class="line">Console.WriteLine(str[<span class="number">0</span>].GetType().Name); <span class="comment">//Char</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Unicode-码位"><a href="#Unicode-码位" class="headerlink" title="Unicode 码位"></a>Unicode 码位</h1><p>Unicode 是一种国际编码标准，可用于各种平台以及各种语言和脚本。</p>
+<p>Unicode 标准定义了超过 110 万个<a href="https://www.unicode.org/glossary/#code_point">码位</a>。 码位是一个整数值，范围从 0 到 U+10FFFF（十进制 1,114,111）。 一些码位被分配给字母、符号或表情符号。 其他码位分配给控制文本或 character 显示方式的操作，例如换行。 很多码位尚未经分配。例如字母A的Unicode码点是U+0041。</p>
+<p>一般情况下字符串长度string.Length 就是可见的文本字符数量，但这并不绝对相等。大多数字符都是一个char组成，然而有些字符无法用一个char表示，如表情、不常用字符等，他们会用两个char（2x2个字节）来表示。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="string">&quot;a&quot;</span>.Length.Dump();    <span class="comment">//1</span></span><br><span class="line"><span class="string">&quot;🔊&quot;</span>.Length.Dump();  <span class="comment">//2</span></span><br><span class="line"><span class="string">&quot;🚩&quot;</span>.Length.Dump();  <span class="comment">//2</span></span><br><span class="line"><span class="string">&quot;⏰&quot;</span>.Length.Dump();  <span class="comment">//1</span></span><br><span class="line"><span class="string">&quot;你好&quot;</span>.Length.Dump(); <span class="comment">//2</span></span><br><span class="line"><span class="string">&quot;臢&quot;</span>.Length.Dump();   <span class="comment">//1</span></span><br><span class="line"><span class="string">$&quot;<span class="subst">&#123;(<span class="built_in">int</span>)<span class="string">&#x27;A&#x27;</span>:X4&#125;</span>&quot;</span>.Dump(); <span class="comment">//0041</span></span><br><span class="line"><span class="comment">//上面的dump() 是一个扩展方法，作用同Console.WritLine()</span></span><br></pre></td></tr></table></figure>
+
+<p>Unicode 字符集中包含多个分类（平面）：其中最常用的就是基本平面，大部分常用字符都在这里面。</p>
+<ul>
+<li>🔸<strong>基本多文种平面（BMP，Basic Multilingual Plane）</strong>：Unicode 的BMP区域几乎包含了所有常用的字符，如几十种主流语言，及30000+的汉字，BMP区域的字符都只需要1个char（2个字节）表示。</li>
+</ul>
+<p>基本多文种平面（Basic Multilingual Plane，简称BMP）是Unicode编码中的一个重要概念，它包含了Unicode编码空间中的第一个平面，范围从U+0000到U+FFFF，共计65536个码位。BMP区域包含了几乎所有常用的字符，包括世界上几十种主流语言的字符、符号以及超过30000个汉字等。</p>
+<p>在BMP区域中，每个字符都可以用一个码点（code point）表示，而每个码点只需要一个char（2个字节）来编码。这使得BMP区域的字符相对容易处理和存储，同时也保证了向后兼容性。因为大多数现代计算机系统都支持Unicode编码，所以处理BMP区域内的字符通常不会出现问题。</p>
+<ul>
+<li>🔸<strong>辅助平面（SMP）</strong>：包含其他不常使用的字符，如一些历史文字、音乐符号、数学符号和表情符号等。该区域大多用两个char（4个字节）表示一个符号。</li>
+</ul>
+<p>辅助平面（Supplementary Multilingual Plane，简称SMP）是Unicode编码中的一个区域，覆盖了U+10000到U+1FFFFF范围内的码位，共有1048576个码位。在辅助平面中包含了一些其他不常用的字符，比如一些历史文字、音乐符号、数学符号以及表情符号等。</p>
+<p>与基本多文种平面（BMP）不同，辅助平面中的字符通常需要用两个char（4个字节）来表示一个符号。这是因为辅助平面包含了更多的字符，超出了BMP区域的范围，因此需要更多的位数来编码这些字符。</p>
+<p>辅助平面中的字符虽然不太常用，但它们在特定领域或特定应用中可能会发挥重要作用，比如在特殊的文本处理、音乐符号的表示、数学公式的编写或者表情符号的使用等方面。</p>
+<h3 id="BMP-与补充码位之间的关系。"><a href="#BMP-与补充码位之间的关系。" class="headerlink" title="BMP 与补充码位之间的关系。"></a>BMP 与补充码位之间的关系。</h3><p><img src="https://cdn.nlark.com/yuque/0/2024/svg/42917490/1718178045235-edcc62fa-9bb0-4daf-80a9-74dcba313299.svg" alt="img"></p>
+<h3 id="明确编码范围"><a href="#明确编码范围" class="headerlink" title="明确编码范围"></a>明确编码范围</h3><p>Unicode 是一种字符集，而实际在计算机上存储时需要用一个确定的编码方案，常见的就是UTF-8、UTF-16、UTF32。</p>
+<ul>
+<li><strong>UTF-16</strong>：2个字节表示BMP中的字符，其他字符会需要4个字节，C#、Java语言内部就是使用的UTF-16来表示的字符串。</li>
+<li><strong>UTF-8</strong>：变长编码，使用1到4个字节来表示一个Unicode字符，在互联网使用广泛。特别是存储 ASCII 为主的内容时，变长编码可以显著节约存储空间。</li>
+</ul>
+<p>ASCII 字符集只包含 128个 基础字符，涵盖键盘上的字母、数字、常用符号。Unicode 是包含 ASCII字符集的，最前面128 个字符就是。在UTF-8编码中 ASCII字符只需要1个字节。</p>
+<h1 id="String基础"><a href="#String基础" class="headerlink" title="String基础"></a>String基础</h1><p>字符串 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string">string</a> 是一个不可变（不可修改）的字符序列（数组），为引用类型，字面量用双引号””包裹。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> s1 = <span class="string">&quot;sam&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> s2 = <span class="keyword">new</span> <span class="built_in">string</span>(<span class="string">&#x27;1&#x27;</span>,<span class="number">5</span>);<span class="comment">//11111</span></span><br><span class="line">Console.WriteLine(s2[<span class="number">0</span>]); <span class="comment">//像数组一样操作字符串中的字符</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>字符串是引用类型，因此可以用null表示，不过一般空字符建议用string.Empty（或””）表示。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> s3 = <span class="string">&quot;&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> s4 = <span class="built_in">string</span>.Empty; <span class="comment">//效果同上</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>字符串可以当做 字符数组一样操作，只是不能修改。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">char</span> s1 = s1[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>字符串的相等为<strong>值比较</strong>，只要字符序列相同即可。例外情况请是如果用object 做&#x3D;&#x3D;比较，只会比较引用地址。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="comment">//相等比较</span></span><br><span class="line"><span class="built_in">object</span> s1= <span class="string">&quot;Hello&quot;</span>.Substring(<span class="number">0</span>,<span class="number">2</span>);</span><br><span class="line"><span class="built_in">object</span> s2 = <span class="string">&quot;Hello&quot;</span>.Substring(<span class="number">0</span>,<span class="number">2</span>);</span><br><span class="line">(s1==s2).Dump();        <span class="comment">//False</span></span><br><span class="line">(s1.Equals(s2)).Dump(); <span class="comment">//True</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的代码中，尽管obj1和obj2的值相同，但由于它们是不同的对象，所以条件obj1 &#x3D;&#x3D; obj2会返回false，表示对象不相等。</p>
+<p>如果您需要比较字符串对象的值，应该使用&#x3D;&#x3D;运算符。如果您需要比较对象的引用地址，可以使用Equals方法或者ReferenceEquals方法进行比较。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> str2 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="keyword">if</span> (str1 == str2)</span><br><span class="line">&#123;</span><br><span class="line">    Console.WriteLine(<span class="string">&quot;Strings are equal&quot;</span>);<span class="comment">//True</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>string &#x3D;&#x3D; 符号 与 object &#x3D;&#x3D;符号</strong></p>
+<p>在C#中，当比较两个string类型的字符串时，&#x3D;&#x3D;运算符会调用字符串类中的重载运算符，这个重载运算符会比较字符串的内容（字符序列），而不是比较对象的引用地址。因此，当两个string类型的字符串包含相同的字符序列时，无论它们是不是同一个对象，&#x3D;&#x3D;运算符都会返回true。</p>
+<p>而对于object类型的对象，&#x3D;&#x3D;运算符比较的是对象的引用地址。所以即使两个object对象的值相同，但是它们分配在不同的内存位置上，&#x3D;&#x3D;运算符仍然会返回false，因为它们的引用地址不同。</p>
+<h2 id="C-中字符串string-Empty，””，null三者的区别"><a href="#C-中字符串string-Empty，””，null三者的区别" class="headerlink" title="C#中字符串string.Empty，””，null三者的区别"></a>C#中字符串string.Empty，””，null三者的区别</h2><p>在C#中，string.Empty，””和null是三个不同的概念，它们代表了不同的字符串值。</p>
+<ol>
+<li>string.Empty：string.Empty是一个表示空字符串的静态字段。它实际上等同于””（空字符串），但使用string.Empty可以更加清晰地表示我们需要一个空字符串。例如，string myString &#x3D; string.Empty;会将myString初始化为空字符串。</li>
+<li>“”（空字符串）：双引号中没有任何字符的字符串被称为空字符串。它是一个有效的字符串对象，但不包含任何字符。例如，string myString &#x3D; “”;会将myString初始化为空字符串。</li>
+<li>null：null表示一个引用类型的空引用。对于字符串对象，null表示变量没有引用任何字符串对象。它不是一个有效的字符串对象，也没有任何长度或内容。例如，string myString &#x3D; null;会将myString初始化为null，而不是字符串对象。</li>
+</ol>
+<p><strong>三者之间的区别在于语义和用途：</strong></p>
+<ul>
+<li>string.Empty和””都表示空字符串，它们在功能上是相同的，可以用于表示一个空的、没有字符的字符串。</li>
+<li>null表示一个没有引用任何字符串对象的空引用，在使用时需要小心处理，以避免空引用异常。</li>
+</ul>
+<p>总之，string.Empty和””都表示空字符串，而null表示一个空引用。根据具体的需求和语义，选择使用适当的值。</p>
+<h2 id="String类型为什么不可继承"><a href="#String类型为什么不可继承" class="headerlink" title="String类型为什么不可继承"></a>String类型为什么不可继承</h2><p><img src="https://cdn.nlark.com/yuque/0/2024/webp/42917490/1718605873253-7a98d55c-b3c4-470e-8b92-edfdbf43d2b9.webp" alt="img"></p>
+<p>String类无法被继承，因为它的修饰符是sealed（可以阻止其他类继承自该类）。String类不能被继承是为了保证字符串的不可变性、性能优化和语言规范的一致性。</p>
+<p>String类无法被继承，因为它的修饰符是sealed（可以阻止其他类继承自该类）。String类不能被继承是为了保证字符串的不可变性、性能优化和语言规范的一致性</p>
+<h2 id="字符串的不变性、驻留性"><a href="#字符串的不变性、驻留性" class="headerlink" title="字符串的不变性、驻留性"></a>字符串的不变性、驻留性</h2><p>字符串是一种有一点点特别的引用类型，因为其不变性，所以在参数传递时有点像值类型。</p>
+<h3 id="不变性"><a href="#不变性" class="headerlink" title="不变性"></a>不变性</h3><h4 id="不可变性的概念"><a href="#不可变性的概念" class="headerlink" title="不可变性的概念"></a>不可变性的概念</h4><p>当我们说字符串是不可变的，我们指的是字符串对象一旦被创建，它的值就不能被更改。如果你尝试修改字符串的内容，实际上是创建了一个新的字符串对象，而不是改变原来的字符串。</p>
+<h4 id="为什么字符串是不可变的？"><a href="#为什么字符串是不可变的？" class="headerlink" title="为什么字符串是不可变的？"></a>为什么字符串是不可变的？</h4><ol>
+<li><strong>安全性</strong>: 不可变对象在多线程环境中是线程安全的，因为它们的状态不能改变。</li>
+<li><strong>性能优化</strong>: 由于不可变性，相同的字符串可以安全地被多个引用共享，避免了重复创建相同内容的字符串对象，从而节省内存。</li>
+<li><strong>字符串驻留（Interning）</strong>: 不可变字符串使字符串驻留成为可能，即相同的字符串字面量可以被共享，进一步优化内存使用。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> s1 = <span class="string">&quot;a&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> s2 = s1 + <span class="string">&quot;b&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="驻留性"><a href="#驻留性" class="headerlink" title="驻留性"></a>驻留性<img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718602203273-74947419-4722-42db-9cff-2c469b1031cf.png" alt="img"></h3><p>运行时将字符串值存储在“驻留池（字符串池）”中，相同值的字符串都复用同一地址。</p>
+<p>不变性、驻留性 是.Net对string 的性能优化，提升字符串的处理性能。如下示例中，s1、s2字符串是同一个引用。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> s1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> s2 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">Console.WriteLine(s1 == s2);                      <span class="comment">//True</span></span><br><span class="line"><span class="comment">//Equals方法比较地址</span></span><br><span class="line">Console.WriteLine(s1.Equals(s2));                 <span class="comment">//True</span></span><br><span class="line">Console.WriteLine(Object.ReferenceEquals(s1,s2)); <span class="comment">//True</span></span><br></pre></td></tr></table></figure>
+
+<p>在C#中，一般情况下并不是所有的字符串都会被驻留在字符串驻留池中。字符串驻留池是用来存储字符串常量的一种优化机制，确实，如果所有的字符串都被驻留，那可能会导致驻留池过度膨胀。</p>
+<h3 id="两种情况会产生驻留"><a href="#两种情况会产生驻留" class="headerlink" title="两种情况会产生驻留"></a>两种情况会产生驻留</h3><h4 id="1-1-1-字面量的字符串"><a href="#1-1-1-字面量的字符串" class="headerlink" title="1.1.1. 字面量的字符串"></a>1.1.1. 字面量的字符串</h4><p>编译器在编译时会对字符串字面量进行优化，将相同的字符串字面量在编译期间合并为同一个引用，这样就可以避免在运行时重复创建相同值的字符串对象。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> str2 = <span class="string">&quot;hello&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718265358659-e416475b-17f0-4db1-8125-4edc1d368225.png" alt="img"></p>
+<h4 id="1-1-2-使用string-Intern方法"><a href="#1-1-2-使用string-Intern方法" class="headerlink" title="1.1.2. 使用string.Intern方法"></a>1.1.2. 使用string.Intern方法</h4><p>以手动将一个字符串对象添加到驻留池中，通过调用string.Intern方法实现。</p>
+<p><strong>注意！</strong>这个方法会在驻留池中查找是否已经有相同值的字符串</p>
+<ul>
+<li><strong>如果有则返回已有引用，</strong></li>
+<li><strong>如果没有则将该字符串添加到驻留池中并返回引用</strong></li>
+</ul>
+<p>这样可以在运行时实现字符串对象的共享。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> internedStr1 = <span class="built_in">string</span>.Intern(str1);</span><br><span class="line"><span class="comment">// 对比字符串是否相等</span></span><br><span class="line">Console.WriteLine(Object.ReferenceEquals(str1, internedStr1)); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> st1 = <span class="string">&quot;123&quot;</span> + <span class="string">&quot;abc&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> st2 = <span class="string">&quot;123abc&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> st3 = st2.Substring(<span class="number">0</span>,<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+
+<p>看看上面代码生成的IL代码</p>
+<p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718512973565-5b5603bd-87d7-46bd-9fc4-0375d72eb9a7.png" alt="img"></p>
+<ul>
+<li>常量的字符串”123” + “abc”连接被编译器优化了。</li>
+<li>常量字符串使用指令“ldstr”加载的到栈，该指令会先查看驻留池中是否已存在，如果已存在则直接返回已有字符串对象的地址，否则就加入。</li>
+<li></li>
+</ul>
+<p>那该如何来验证字符串是否驻留呢，string类提供两个静态方法：</p>
+<ul>
+<li>String.Intern(string str) 可以主动驻留一个字符串；</li>
+<li>String.IsInterned(string str);检测指定字符串是否驻留，如果驻留则返回字符串，否则返回NULL</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> s1 = <span class="string">&quot;123&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> s2 = s1 + <span class="string">&quot;abc&quot;</span>;</span><br><span class="line">Console.WriteLine(s2);   <span class="comment">//输出：123abc</span></span><br><span class="line">Console.WriteLine(<span class="built_in">string</span>.IsInterned(s2) ?? <span class="string">&quot;NULL&quot;</span>);   <span class="comment">//输出：NULL。因为“123abc”没有驻留</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span>.Intern(s2);   <span class="comment">//主动驻留字符串</span></span><br><span class="line">Console.WriteLine(<span class="built_in">string</span>.IsInterned(s2) ?? <span class="string">&quot;NULL&quot;</span>);   <span class="comment">//输出：123abc</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="GC管理器"><a href="#GC管理器" class="headerlink" title="GC管理器"></a>GC管理器</h2><p>驻留的字符串（字符串池）在托管堆上存储，大家共享，内部其实是一个哈希表，存储被驻留的字符串和其内存地址。驻留池生命周期同进程，并不受GC管理，因此无法被回收。</p>
+<p><strong>GC垃圾回收不是可以管理堆上的东西吗 为什么驻留池不受影响</strong></p>
+<p>圾回收器（Garbage Collector，GC）可以管理托管堆上的对象，但字符串驻留池中的字符串对象不受GC的管理。这是因为字符串在驻留池中存储的是常量字符串，这些字符串是不可变的，因此不会被修改或销毁。在程序执行过程中，这些字符串对象会一直存在于驻留池中，直到程序结束。</p>
+<p>另外，字符串驻留池中的字符串对象被频繁使用，而且可能被多个部分共享。如果GC对这些字符串对象进行回收，可能会导致程序中其他部分出现意外的行为或异常。因此，为了保证程序的稳定性和预测性，字符串驻留池中的字符串对象不会被垃圾回收器所回收。</p>
+<p><strong>为什么GC不回收驻留池中的字符串</strong>:</p>
+<ul>
+<li><strong>全局引用</strong>: 驻留池中的字符串是通过全局引用持有的，只要程序运行，这些引用就不会失效。因此，GC认为这些字符串是根对象（root objects），不会被回收。</li>
+<li><strong>内存优化</strong>: 驻留字符串池旨在优化内存使用，通过确保相同的字符串字面量只存储一次，避免重复创建相同内容的多个字符串实例。</li>
+<li><strong>性能考量</strong>: 如果GC管理驻留池中的字符串，则会增加额外的开销，因为GC需要跟踪和检查这些字符串的使用情况。这样做可能会削弱字符串驻留机制带来的性能提升。</li>
+</ul>
+<p><strong>字符串在驻留池中存储的是常量字符串，这些字符串是不可变的，因此不会被修改或销毁</strong></p>
+<p>在C#中，字符串是不可变的，这意味着一旦创建了一个字符串对象，它的值就不能被修改。任何对字符串的操作实际上都会<strong>创建一个新的字符串对象</strong>，而原始的字符串对象保持不变。</p>
+<p>当我们将一个字符串对象添加到字符串驻留池中时，这个字符串就成为了一个驻留字符串。驻留字符串是特殊的常量字符串，它们的值在程序的生命周期内不会被修改，也不会被销毁。因为这些字符串是不可变的，任何对它们的操作都会返回一个新的字符串对象，而原来的字符串对象仍然存在于驻留池中。</p>
+<p>因此，驻留池中存储的字符串是常量字符串，它们是不可变的，不会被修改或销毁。这也是为什么字符串驻留池中的字符串对象不受垃圾回收器管理的原因，因为它们被认为是全局唯一且不可变的常量，可以被整个应用程序共享和重复使用。</p>
+<h3 id="1-1-lock锁不能用string，避免使用同一个锁（字符串引用）。"><a href="#1-1-lock锁不能用string，避免使用同一个锁（字符串引用）。" class="headerlink" title="1.1. lock锁不能用string，避免使用同一个锁（字符串引用）。"></a>1.1. lock锁不能用string，避免使用同一个锁（字符串引用）。</h3><p>当使用lock语句进行线程同步时，需要使用一个对象作为锁。在C#中，lock语句中的参数是一个对象引用，而不是值类型（比如int、string等），因为值类型是存储在堆栈中的，而对象是存储在堆中的。</p>
+<h4 id="lock语句"><a href="#lock语句" class="headerlink" title="lock语句"></a>lock语句</h4><p>lock语句主要用于实现线程同步，确保在多线程环境下对共享资源的访问是原子性和线程安全的。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">lock</span> (expression)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 临界区代码，用于访问共享资源</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>lock语句中的 expression 是一个对象表达式，通常是用来作为锁对象的。当一个线程进入 lock 代码块时，它会尝试获取 expression 表达式对应的锁。如果锁没有被任何其他线程占用，当前线程会获取到该锁，然后执行临界区代码。当临界区代码执行完毕时，线程会释放锁，使其他线程能够获取该锁。</p>
+<h4 id="避免使用同一个锁"><a href="#避免使用同一个锁" class="headerlink" title="避免使用同一个锁"></a>避免使用同一个锁</h4><p>如果在lock语句中使用字符串作为锁对象，由于字符串是不可变的，多个线程可能会引用相同的字符串对象，导致多个线程之间共享同一个锁。这种情况下，如果其中一个线程获取了锁，并且其他线程也尝试获取锁，就会出现竞态条件，从而导致线程安全性问题。</p>
+<p>为了避免这种情况，通常建议使用一个独立的对象作为锁对象，而不是直接使用字符串或其他引用类型。可以定义一个私有的静态对象作为锁对象，如下所示</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> <span class="built_in">object</span> _lockObj = <span class="keyword">new</span> <span class="built_in">object</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">lock</span>(_lockObj)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 在这里执行线程安全的操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过这种方式，每个线程都会使用独立的锁对象，并不会共享同一个锁。这可以确保在lock语句中的操作是线程安全的，避免产生竞态条件。因此，在编写多线程程序时，避免在lock语句中使用字符串引用是很重要的一点。</p>
+<h4 id="具体使用"><a href="#具体使用" class="headerlink" title="具体使用"></a>具体使用</h4><figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">using</span> System;</span><br><span class="line"><span class="keyword">using</span> System.Threading;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title">Program</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> <span class="built_in">object</span> _lockObj = <span class="keyword">new</span> <span class="built_in">object</span>();</span><br><span class="line">  </span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(DoWork);</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(DoWork);</span><br><span class="line"></span><br><span class="line">        t1.Start();</span><br><span class="line">        t2.Start();</span><br><span class="line"></span><br><span class="line">        t1.Join();</span><br><span class="line">        t2.Join();</span><br><span class="line"></span><br><span class="line">        Console.WriteLine(<span class="string">&quot;All threads have completed.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">DoWork</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">lock</span>(_lockObj)</span><br><span class="line">        &#123;</span><br><span class="line">            Console.WriteLine(Thread.CurrentThread.ManagedThreadId + <span class="string">&quot; is performing work.&quot;</span>);</span><br><span class="line">            Thread.Sleep(<span class="number">1000</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在C#中，lock语句使用一个对象作为锁对象来实现线程同步。当多个线程尝试获取同一个对象的锁时，只有一个线程能够成功获取锁，其他线程会被阻塞，直到成功获得锁的线程释放锁。</p>
+<p>当在lock语句中使用字符串作为锁对象时，由于字符串是不可变的，编译器会对字符串常量进行驻留（intern），即将相同字符串值的引用指向同一个内存地址。这样做是为了节省内存和提高性能。</p>
+<p>因此，如果多个线程使用相同的字符串常量作为锁对象，它们实际上会引用相同的字符串对象，即多个线程共享同一个锁。这样会导致多个线程之间的同步问题，因为它们没有各自独立的锁对象。</p>
+<p>当某个线程获取了锁并开始执行临界区代码时，其他线程会阻塞在lock语句处，等待锁的释放。但由于多个线程共享同一个锁对象，它们实际上会竞争同一个锁，可能会导致竞态条件和数据不一致的问题。</p>
+<h3 id="1-2-避免创建字面量的大字符串，会常住内存无法释放，当然也不要滥用string-Intern-string-方法。"><a href="#1-2-避免创建字面量的大字符串，会常住内存无法释放，当然也不要滥用string-Intern-string-方法。" class="headerlink" title="1.2. 避免创建字面量的大字符串，会常住内存无法释放，当然也不要滥用string.Intern(string) 方法。"></a>1.2. 避免创建字面量的大字符串，会常住内存无法释放，当然也不要滥用string.Intern(string) 方法。</h3><h1 id="比较字符串"><a href="#比较字符串" class="headerlink" title="比较字符串"></a>比较字符串</h1><p>使用 .NET 进行开发时，请在比较字符串时遵循以下建议。</p>
+<p>各种与字符串相关的方法执行比较。</p>
+<p>示例包括 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.equals">String.Equals</a>、<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare">String.Compare</a>、<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.indexof">String.IndexOf</a> 和 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.startswith">String.StartsWith</a>。</p>
+<h2 id="显式指定字符串比较"><a href="#显式指定字符串比较" class="headerlink" title="显式指定字符串比较"></a>显式指定字符串比较</h2><p><a href="https://learn.microsoft.com/zh-cn/dotnet/standard/base-types/best-practices-strings">有关比较 .NET 中字符串的最佳做法 - .NET</a></p>
+<h3 id="StringComparison"><a href="#StringComparison" class="headerlink" title="StringComparison"></a>StringComparison</h3><p>string 的 <a href="https://learn.microsoft.com/zh-cn/dotnet/standard/base-types/best-practices-strings">比较字符串</a> 是默认包含文化和区分大小写的顺序比较，C#内置的一个字符串比较规则（枚举）<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.stringcomparison">StringComparison</a>，可设置比较规则。在很多内置方法中使用，包括 String.Equals、String.Compare、String.IndexOf 和 String.StartsWith等。</p>
+<table>
+<thead>
+<tr>
+<th>CurrentCulture</th>
+<th>本地语言区域规则，适用于给用户显示的内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CurrentCultureIgnoreCase</td>
+<td>同上+忽略大小写</td>
+</tr>
+<tr>
+<td>InvariantCulture</td>
+<td>固定语言区域，适用于存储的数据</td>
+</tr>
+<tr>
+<td>InvariantCultureIgnoreCase</td>
+<td>同上+忽略大小写</td>
+</tr>
+<tr>
+<td>Ordinal</td>
+<td>二进制值顺序比较字符串，比较快⚡</td>
+</tr>
+<tr>
+<td>OrdinalIgnoreCase</td>
+<td>同上+忽略大小写</td>
+</tr>
+</tbody></table>
+<p>📢 微软官方建议在使用上述字符串比较方法中明确指定 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.stringcomparison">StringComparison</a> 参数值，而不是默认的比较规则。</p>
+<h4 id="CurrentCulture区域性比较"><a href="#CurrentCulture区域性比较" class="headerlink" title="CurrentCulture区域性比较"></a>CurrentCulture区域性比较</h4><p>在 .NET 中，区域性由 CultureInfo 类表示，它包含了有关语言、文化和地区的信息，并提供了访问这些信息的方法和属性。每个 CultureInfo 对象都代表一个特定的文化或区域性设置，例如美国英语、中文简体、法国法语等。</p>
+<p>区域性设置通常包括以下信息：</p>
+<ul>
+<li>语言（Language）：表示使用的语言，如英语、中文、法语等。</li>
+<li>区域（Region）：表示地区或国家，如美国、中国、法国等。</li>
+<li>文化（Culture）：表示特定的语言和地区组合，如 en-US（美国英语）、zh-CN（中文简体）、fr-FR（法国法语）等。</li>
+<li>日期格式（Date Format）：表示日期的显示格式，包括日期分隔符、月份、年份的排列顺序等。</li>
+<li>时间格式（Time Format）：表示时间的显示格式，包括时、分、秒等的显示形式。</li>
+<li>货币符号（Currency Symbol）：表示货币的符号，如美元符号、人民币符号等。</li>
+<li>数字格式（Number Format）：表示数字的显示格式，包括小数点、千位分隔符等。</li>
+</ul>
+<p>通过设置正确的区域性，可以确保应用程序在不同的地区或国家下能够正确地显示日期、时间、货币符号等信息，提高用户体验和国际化支持。在 .NET 中，使用 CultureInfo.CurrentCulture 属性可以获取当前线程的区域性设置，以便根据当前的语言和文化规则执行相应的逻辑。</p>
+<h4 id="InvariantCulture固定区域性"><a href="#InvariantCulture固定区域性" class="headerlink" title="InvariantCulture固定区域性"></a>InvariantCulture固定区域性</h4><p>InvariantCulture 是 .NET Framework 中特殊的一种区域性，它代表了一种固定的文化设置，与特定的地区或国家无关。InvariantCulture 主要用于在跨文化环境下进行数据存储和传输时，以及在不需要依赖特定区域性规则的场景下使用。</p>
+<p>InvariantCulture 具有以下特点：</p>
+<ul>
+<li>日期格式和时间格式固定为 “yyyy-MM-dd HH:mm:ss”，不会受到当前地区或国家的日期格式设置影响。</li>
+<li>货币符号为空，不会显示任何特定的货币符号。</li>
+<li>数字格式固定为小数点表示为 “.”，千位分隔符为空。</li>
+<li>字符排序规则遵循基本的 Unicode 字符排序，不受特定地区的排序规则影响。</li>
+<li>不支持区域性特定的文化规则，如大小写转换、重音符号处理等。</li>
+</ul>
+<p>在开发中，可以使用 InvariantCulture 来确保在不同地区或国家下具有一致的行为，避免因为区域性差异而导致数据的显示或解析问题。例如，在存储日期时间数据、序列化和反序列化数据、比较字符串时，可以使用 InvariantCulture 来保持一致性。</p>
+<h4 id="Ordinal二进制对比"><a href="#Ordinal二进制对比" class="headerlink" title="Ordinal二进制对比"></a>Ordinal二进制对比</h4><p>Ordinal 是 .NET Framework 中的一种特殊的比较规则，用于按照字符的 Unicode 值进行字符串比较。Ordinal 比较不考虑字符的文化上下文，不会根据特定文化规则来进行排序，而是直接按照字符的二进制表示来进行比较。</p>
+<p>Ordinal 比较具有以下特点：</p>
+<ul>
+<li>不考虑字符的文化特性，直接按照 Unicode 值进行比较。</li>
+<li>将字符串中的每个字符视为一个单独的字节，按照字节数组的顺序来比较。</li>
+<li>区分大小写，并且将大写字母视为在小写字母之前。</li>
+<li>对于字符串长度相等的情况下，会逐个比较字符，直到找到不同的字符或者比较完成。有点像遍历</li>
+</ul>
+<p>使用 Ordinal 比较通常用于以下场景：</p>
+<ul>
+<li>在不涉及任何文化特性的场景下进行字符串比较，如<strong>文件名比较、URL</strong> 比较等。</li>
+<li>在需要精确比较字符串二进制表示的场景下，如哈希值的比较。</li>
+<li>对于某些特殊字符集的处理，如在 ASCII 字符集下进行字符比较。</li>
+</ul>
+<h2 id="1-String-Equals"><a href="#1-String-Equals" class="headerlink" title="1. String.Equals"></a>1. String.Equals</h2><h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4><p><strong>obj</strong> <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.object?view=net-8.0">Object</a></p>
+<p>要与此实例进行比较的字符串。</p>
+<h4 id="返回"><a href="#返回" class="headerlink" title="返回"></a>返回</h4><p><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.boolean?view=net-8.0">Boolean</a></p>
+<p>如果 true 是一个 obj 且其值与此实例相等，则为 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a>；否则为 false。 如果 obj 为 null，则此方法返回 false。</p>
+<h3 id="重载"><a href="#重载" class="headerlink" title="重载"></a>重载</h3><table>
+<thead>
+<tr>
+<th><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.equals?view=net-8.0#system-string-equals(system-object)">Equals(Object)</a></th>
+<th>确定此实例是否与指定的对象（也必须是<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象）具有相同的值。</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.equals?view=net-8.0#system-string-equals(system-string)">Equals(String)</a></td>
+<td>确定此实例是否与另一个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象具有相同的值。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.equals?view=net-8.0#system-string-equals(system-string-system-string)">Equals(String, String)</a></td>
+<td>确定两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象是否具有相同的值。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.equals?view=net-8.0#system-string-equals(system-string-system-stringcomparison)">Equals(String, StringComparison)</a></td>
+<td>确定此字符串是否与另一个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象具有相同的值。 参数指定区域性、大小写以及比较所用的排序规则。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.equals?view=net-8.0#system-string-equals(system-string-system-string-system-stringcomparison)">Equals(String, String, StringComparison)</a></td>
+<td>确定两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象是否具有相同的值。 参数指定区域性、大小写以及比较所用的排序规则。</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">enum</span> StringComparison</span><br><span class="line">&#123;</span><br><span class="line">	CurrentCulture,			<span class="comment">//本地语言区域规则，适用于给用户显示的内容</span></span><br><span class="line">	CurrentCultureIgnoreCase,<span class="comment">//同上+忽略大小写</span></span><br><span class="line">	InvariantCulture,		<span class="comment">//固定语言区域，适用于存储的数据</span></span><br><span class="line">	InvariantCultureIgnoreCase,<span class="comment">//	同上+忽略大小写</span></span><br><span class="line">	Ordinal,				<span class="comment">//二进制值顺序比较字符串，比较快⚡</span></span><br><span class="line">	OrdinalIgnoreCase		<span class="comment">//同上+忽略大小写</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Main</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="built_in">string</span>.Equals(<span class="string">&quot;ABC&quot;</span>,<span class="string">&quot;abc&quot;</span>,StringComparison.Ordinal);           <span class="comment">//Fasle</span></span><br><span class="line">	<span class="built_in">string</span>.Equals(<span class="string">&quot;ABC&quot;</span>,<span class="string">&quot;abc&quot;</span>,StringComparison.OrdinalIgnoreCase); <span class="comment">//True</span></span><br><span class="line">    <span class="built_in">string</span>.Equals(<span class="string">&quot;ABC&quot;</span>,<span class="string">&quot;abc&quot;</span>,StringComparsion.CurrentCulture)	   <span class="comment">//Fasle</span></span><br><span class="line">    <span class="built_in">string</span>.Equals(<span class="string">&quot;ABC&quot;</span>,<span class="string">&quot;abc&quot;</span>,StringComparsion.CurrentCultureIgoreCase)<span class="comment">//True</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Equals-Object-与Equals-string"><a href="#Equals-Object-与Equals-string" class="headerlink" title="Equals(Object)与Equals(string)"></a>Equals(Object)与Equals(string)</h3><p><strong>Equals(Object)</strong> <strong>方法：</strong></p>
+<ul>
+<li>Equals(Object) 方法是 System.Object 类中定义的一个虚拟方法，用于确定实例是否与指定的对象相等。在 String 类中，该方法被重写，用于比较字符串的值是否相等。传入的参数可以是任意类型的对象，但是如果传入的对象不是 String 类型，Equals 方法会将其视为不相等。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="built_in">object</span> obj = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">bool</span> result = str1.Equals(obj); <span class="comment">// 结果为 true</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>Equals(string)</strong> <strong>方法：</strong></p>
+<ul>
+<li>Equals(string) 方法是 String 类中定义的一个重载方法，专门用于比较字符串的值是否相等。它只能比较字符串对象之间的相等性，传入的参数必须是一个 String 类型的对象。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> str2 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">bool</span> result = str1.Equals(str2); <span class="comment">// 结果为 true</span></span><br></pre></td></tr></table></figure>
+
+<p>虽然两者都可以用于比较字符串的值是否相等，但是它们的重载和定义是不同的，Equals(Object) 方法是从 Object 类继承过来的通用方法，而 Equals(string) 是 String 类特有的方法。在实际使用中，可以根据需要选择合适的方法来比较字符串。</p>
+<h3 id="性能比较"><a href="#性能比较" class="headerlink" title="性能比较"></a>性能比较</h3><figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> s1 = <span class="string">&quot;hellohellohellohello&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> s2 = <span class="string">&quot;helloHelloHelloHello&quot;</span>;</span><br><span class="line"><span class="comment">//Equals()无参比较</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals</span>()</span> =&gt; s1.Equals(s2);<span class="comment">//False</span></span><br><span class="line"> <span class="comment">//区域性比较</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_CurrentCulture</span>()</span> =&gt; s1.Equals(s2,StringComparison.CurrentCulture);<span class="comment">//False</span></span><br><span class="line"><span class="comment">//区域性 无大小写</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_CurrentCultureIgnoreCase</span>()</span> =&gt; s1.Equals(s2,StringComparison.CurrentCultureIgnoreCase);<span class="comment">//True</span></span><br><span class="line"><span class="comment">//固定区域性</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_InvariantCulture</span>()</span> =&gt; s1.Equals(s2,StringComparison.InvariantCulture);<span class="comment">//False</span></span><br><span class="line"><span class="comment">//固定区域性 无大小写</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_InvariantCultureIgnoreCase</span>()</span> =&gt; s1.Equals(s2,StringComparison.InvariantCultureIgnoreCase);<span class="comment">//True</span></span><br><span class="line"><span class="comment">//二进制比对</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_Ordinal</span>()</span> =&gt; s1.Equals(s2,StringComparison.Ordinal);<span class="comment">//False</span></span><br><span class="line"><span class="comment">//二进制 无大小写</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_OrdinalIgnoreCase</span>()</span> =&gt; s1.Equals(s2,StringComparison.OrdinalIgnoreCase);<span class="comment">//True</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">bool</span> <span class="title">Equals_Span</span>()</span> =&gt; s1.AsSpan() == s2.AsSpan();<span class="comment">//False</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>上面7个方法 分别测试了Equals的默认版本、及带参 StringComparison 的不同比较规则的性能。</li>
+<li>最后加了一个使用Span 的相等比较，更多关于Span的资料查看《<a href="https://www.yuque.com/kanding/ktech/igv37nzech502g92">高性能的Span、Memory</a>》。</li>
+</ul>
+<p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718517722186-e10286d5-dcb7-4770-8be7-5f35850efb4e.png" alt="img"></p>
+<p>AsSpan()简述</p>
+<p>.NET 中，AsSpan() 是一个用于将数组、字符串或其他可读写序列（如 List 或 Span 类型）转换为 Span 类型的扩展方法。Span 是 .NET Core 2.1 引入的一种内存管理类型，用于提高性能和降低内存分配的成本。</p>
+<p>AsSpan() 方法的主要作用是创建一个新的 Span 对象，该对象可以在不需要分配新的内存的情况下直接引用现有的数据。这可以带来一些性能优势，特别是在需要处理大量数据时。</p>
+<p>AsSpan() 方法适用于以下数据类型：</p>
+<ul>
+<li>数组：可以将数组转换为 Span。</li>
+<li>字符串：可以将字符串转换为 ReadOnlySpan <code>&lt;char&gt;</code>，表示只读的字符 Span。</li>
+<li>List：可以将 List 转换为 ReadOnlySpan，以便对 List 中的元素进行读取操作。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 将数组转换为 Span</span></span><br><span class="line"><span class="built_in">int</span>[] array = &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span> &#125;;</span><br><span class="line">Span&lt;<span class="built_in">int</span>&gt; span = array.AsSpan();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将字符串转换为 ReadOnlySpan&lt;char&gt;</span></span><br><span class="line"><span class="built_in">string</span> str = <span class="string">&quot;Hello, World!&quot;</span>;</span><br><span class="line">ReadOnlySpan&lt;<span class="built_in">char</span>&gt; charSpan = str.AsSpan();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将 List 转换为 ReadOnlySpan</span></span><br><span class="line">List&lt;<span class="built_in">int</span>&gt; list = <span class="keyword">new</span> List&lt;<span class="built_in">int</span>&gt; &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span> &#125;;</span><br><span class="line">ReadOnlySpan&lt;<span class="built_in">int</span>&gt; listSpan = list.AsSpan();</span><br></pre></td></tr></table></figure>
+
+<p><strong>测结结论</strong>：</p>
+<ul>
+<li>Span最快，其次无参Equals()版本、Ordinal，他们都是只比较二进制值，不考虑文化信息。</li>
+<li>个人理解，如果不考虑一些比较特别的语言（如瑞典语、土耳其语、 阿塞拜疆语等），只是针对英文、中文的字符串，一般不用考虑文化语义。</li>
+<li>Equals()默认是不考虑文化语义的字符值比较，但有些比较方法就不一定能了，比如StartsWith、Compare 默认的是带文化语义的CurrentCulture规则，因此推荐主动配置 <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.stringcomparison">StringComparison</a> 参数。</li>
+</ul>
+<h2 id="2-String-Compare"><a href="#2-String-Compare" class="headerlink" title="2. String.Compare"></a>2. String.Compare</h2><p>String.Compare 是一个用于比较两个指定字符串的静态方法。它返回一个整数，表示两个字符串在排序顺序中的相对位置。</p>
+<ul>
+<li>如果第一个字符串在排序顺序中位于第二个字符串之前，返回值将是负数；</li>
+<li>如果它们相等，返回值将是 0；</li>
+<li>如果第一个字符串在排序顺序中位于第二个字符串之后，返回值将是正数。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span>.Compare(<span class="string">&quot;ABC&quot;</span>,<span class="string">&quot;abc&quot;</span>,StringComparison.Ordinal);          <span class="comment">//-32</span></span><br><span class="line"><span class="built_in">string</span>.Compare(<span class="string">&quot;ABC&quot;</span>,<span class="string">&quot;abc&quot;</span>,StringComparison.OrdinalIgnoreCase);<span class="comment">//0</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare?view=net-8.0#system-string-compare(system-string-system-int32-system-string-system-int32-system-int32-system-stringcomparison)">Compare(String, Int32, String, Int32, Int32, StringComparison)</a></th>
+<th>使用指定的规则比较两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象的子字符串，并返回一个整数，指示二者在排序顺序中的相对位置。</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare?view=net-8.0#system-string-compare(system-string-system-string-system-globalization-cultureinfo-system-globalization-compareoptions)">Compare(String, String, CultureInfo, CompareOptions)</a></td>
+<td>对两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象进行比较，使用指定的比较选项和区域性特定的信息来影响比较，并返回一个整数，该整数指示这两个字符串在排序顺序中的关系。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare?view=net-8.0#system-string-compare(system-string-system-string-system-boolean-system-globalization-cultureinfo)">Compare(String, String, Boolean, CultureInfo)</a></td>
+<td>比较两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象（其中忽略或考虑其大小写，并使用区域性特定的信息干预比较），并返回一个整数，指示二者在排序顺序中的相对位置。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare?view=net-8.0#system-string-compare(system-string-system-string-system-stringcomparison)">Compare(String, String, StringComparison)</a></td>
+<td>使用指定的规则比较两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象，并返回一个整数，指示二者在排序顺序中的相对位置。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare?view=net-8.0#system-string-compare(system-string-system-string-system-boolean)">Compare(String, String, Boolean)</a></td>
+<td>比较两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象（其中忽略或考虑其大小写），并返回一个整数，指示二者在排序顺序中的相对位置。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.compare?view=net-8.0#system-string-compare(system-string-system-string)">Compare(String, String)</a></td>
+<td>比较两个指定的<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string?view=net-8.0">String</a> 对象，并返回一个指示二者在排序顺序中的相对位置的整数。</td>
+</tr>
+</tbody></table>
+<h2 id="3-字符串转义"><a href="#3-字符串转义" class="headerlink" title="3. 字符串转义 \"></a>3. 字符串转义 \</h2><p>转义字符：反斜杠“\”</p>
+<table>
+<thead>
+<tr>
+<th><strong>转义序列</strong></th>
+<th><strong>字符名称</strong></th>
+<th><strong>Unicode 编码</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>&#39;</td>
+<td>单引号</td>
+<td>0x0027</td>
+</tr>
+<tr>
+<td>&quot;</td>
+<td>双引号</td>
+<td>0x0022</td>
+</tr>
+<tr>
+<td>\0</td>
+<td>null</td>
+<td>0x0000</td>
+</tr>
+<tr>
+<td>\b</td>
+<td>Backspace</td>
+<td>0x0008</td>
+</tr>
+<tr>
+<td>\f</td>
+<td>换页</td>
+<td>0x000C</td>
+</tr>
+<tr>
+<td>\n</td>
+<td>换行</td>
+<td>0x000A</td>
+</tr>
+<tr>
+<td>\r</td>
+<td>回车</td>
+<td>0x000D</td>
+</tr>
+<tr>
+<td>\t</td>
+<td>水平制表符</td>
+<td>0x0009</td>
+</tr>
+</tbody></table>
+<h1 id="字符串连接的8种方式"><a href="#字符串连接的8种方式" class="headerlink" title="字符串连接的8种方式"></a>字符串连接的8种方式</h1><table>
+<thead>
+<tr>
+<th><strong>连接方法</strong></th>
+<th><strong>示例&#x2F;说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>直接相加</td>
+<td>“hello”+str，其实编译后为 string.Concat (“hello”, str)</td>
+</tr>
+<tr>
+<td>连接函数：String.Concat()</td>
+<td>字符串相加一般就是被编译为调用String.Concat()方法，有很多重载，支持任意多个参数</td>
+</tr>
+<tr>
+<td>集合连接函数：String.Join()</td>
+<td>将（集合）参数连接为一个字符串，string.Join(‘-‘,1,2,3); &#x2F;&#x2F;1-2-3</td>
+</tr>
+<tr>
+<td>格式化：String.Format()</td>
+<td>传统的字符串格式化手艺，string.Format(“name:{0},age:{1}”,str,18)</td>
+</tr>
+<tr>
+<td>$ <a href="https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/tokens/interpolated">字符串插值</a></td>
+<td>用花括号{var}引用变量、表达式，强大、方便，$”Hello {name} !”</td>
+</tr>
+<tr>
+<td>@<a href="https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/tokens/verbatim">逐字文本字面量</a></td>
+<td>支持转义符号、换行符，常用于文件路径、多行字符：@$”C:\Users\{name}\Downloads”</td>
+</tr>
+<tr>
+<td>“””<a href="https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/tokens/raw-string">原始字符串字面量</a></td>
+<td>C# 11，三个双冒号包围，支持多行文本的原始字面量。</td>
+</tr>
+<tr>
+<td>StringBuilder</td>
+<td>当处理大量字符串连接操作时，推荐使用StringBuilder，效果更优。</td>
+</tr>
+</tbody></table>
+<p>字面量字符串的相加会被编译器优化，直接合并为一个字符串。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> str1 = <span class="string">&quot;Hello &quot;</span> + <span class="string">&quot;world&quot;</span> + <span class="string">&quot; !&quot;</span>;</span><br><span class="line"><span class="keyword">var</span> str2 = DateTime.Now.Year + <span class="string">&quot;年&quot;</span> + DateTime.Now.Month + <span class="string">&quot;月&quot;</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//编译后的代码：</span></span><br><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;Hello world !&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> str2 = <span class="built_in">string</span>.Concat (DateTime.Now.Year.ToString (), <span class="string">&quot;年&quot;</span>, DateTime.Now.Month.ToString (), <span class="string">&quot;月&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-String-Format"><a href="#1-String-Format" class="headerlink" title="1. String.Format"></a>1. String.Format</h2><p><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.string.format">String.Format</a> 方法是早期比较常用的字符串组织方式，后来$字符串插值 问世后就逐步被打入冷宫了。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span>.Format(<span class="string">&quot;&#123;0&#125;+&#123;1&#125; = &#123;2&#125;&quot;</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>);  <span class="comment">//1+2 = 3</span></span><br><span class="line"><span class="built_in">string</span>.Format(<span class="string">&quot;Hello &#123;0&#125;,&#123;0&#125;&quot;</span>,<span class="string">&quot;sam&quot;</span>);  <span class="comment">//Hello sam,sam</span></span><br><span class="line">String.Format(<span class="string">&quot;It is now &#123;0:yyyy-MM-dd&#125; at &#123;0:hh:mm:ss&#125;&quot;</span>, DateTime.Now); <span class="comment">//It is now 2024-01-17 at 10:56:33</span></span><br><span class="line">String.Format(<span class="string">&quot;买了&#123;0&#125;个桔子，共花了&#123;1:C2&#125;。&quot;</span>, <span class="number">4</span>,<span class="number">25.445</span>); <span class="comment">//买了4个桔子，共花了¥25.45。</span></span><br></pre></td></tr></table></figure>
+
+<p> 基本语法规则就是用 {index}来占位，在后面的参数中给出值。</p>
+<ul>
+<li>索引位置从0开始，必须连续递增，可以重复。</li>
+<li>索引的位置对应后面参数的顺序位置，必须对应，参数不能少（抛出异常），可以多。</li>
+<li>字符串格式规则参考后文《字符串格式总结》。</li>
+</ul>
+<h2 id="2-字符串插值"><a href="#2-字符串插值" class="headerlink" title="2. $字符串插值"></a>2. $字符串插值</h2><p>字符串插值的格式：$”{<code>&lt;interpolationExpression&gt;</code>}”，大括号中可以是一个变量，一个（简单）表达式语句，还支持设置格式。功能强大、使用方便，老人孩子都爱用！</p>
+<h3 id="2-1-基本用法"><a href="#2-1-基本用法" class="headerlink" title="2.1. 基本用法"></a>2.1. 基本用法</h3><p>字符串插值通过在字符串前面加上一个美元符号$来实现，并在字符串中使用大括号{}包含变量或表达式。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> name = <span class="string">&quot;Alice&quot;</span>;</span><br><span class="line"><span class="built_in">int</span> age = <span class="number">30</span>;</span><br><span class="line"><span class="built_in">string</span> message = <span class="string">$&quot;My name is <span class="subst">&#123;name&#125;</span> and I am <span class="subst">&#123;age&#125;</span> years old.&quot;</span>;</span><br><span class="line">Console.WriteLine(message);</span><br><span class="line"><span class="comment">// 输出: My name is Alice and I am 30 years old.</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-表达式"><a href="#2-2-表达式" class="headerlink" title="2.2. 表达式"></a>2.2. 表达式</h3><p>不仅可以插入变量，还可以插入表达式。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">int</span> a = <span class="number">5</span>;</span><br><span class="line"><span class="built_in">int</span> b = <span class="number">10</span>;</span><br><span class="line"><span class="built_in">string</span> result = <span class="string">$&quot;The sum of <span class="subst">&#123;a&#125;</span> and <span class="subst">&#123;b&#125;</span> is <span class="subst">&#123;a + b&#125;</span>.&quot;</span>;</span><br><span class="line">Console.WriteLine(result);</span><br><span class="line"><span class="comment">// 输出: The sum of 5 and 10 is 15.</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-转义字符"><a href="#2-3-转义字符" class="headerlink" title="2.3. 转义字符"></a>2.3. 转义字符</h3><p>如果字符串本身包含花括号，可以使用双花括号进行转义。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> example = <span class="string">$&quot;&#123;&#123; This is an example &#125;&#125;&quot;</span>;</span><br><span class="line">Console.WriteLine(example);</span><br><span class="line"><span class="comment">// 输出: &#123; This is an example &#125;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-格式化"><a href="#2-4-格式化" class="headerlink" title="2.4. 格式化"></a>2.4. 格式化</h3><p>可以对插入的变量进行格式化。例如，格式化日期和数字。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">DateTime today = DateTime.Now;</span><br><span class="line"><span class="built_in">double</span> price = <span class="number">123.456</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> formattedString = <span class="string">$&quot;Today is <span class="subst">&#123;today:yyyy-MM-dd&#125;</span>, and the price is <span class="subst">&#123;price:C2&#125;</span>.&quot;</span>;</span><br><span class="line">Console.WriteLine(formattedString);</span><br><span class="line"><span class="comment">// 输出: Today is 2024-06-17, and the price is $123.46.</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-复杂对象"><a href="#2-5-复杂对象" class="headerlink" title="2.5. 复杂对象"></a>2.5. 复杂对象</h3><p>可以插入复杂对象的属性或方法结果。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Person</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span> FirstName &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span> LastName &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Person person = <span class="keyword">new</span> Person &#123; FirstName = <span class="string">&quot;John&quot;</span>, LastName = <span class="string">&quot;Doe&quot;</span> &#125;;</span><br><span class="line"><span class="built_in">string</span> introduction = <span class="string">$&quot;Hello, my name is <span class="subst">&#123;person.FirstName&#125;</span> <span class="subst">&#123;person.LastName&#125;</span>.&quot;</span>;</span><br><span class="line">Console.WriteLine(introduction);</span><br><span class="line"><span class="comment">// 输出: Hello, my name is John Doe.</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-6-嵌套插值"><a href="#2-6-嵌套插值" class="headerlink" title="2.6. 嵌套插值"></a>2.6. 嵌套插值</h3><p>插值字符串内部可以包含另一个插值字符串。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">int</span> x = <span class="number">10</span>;</span><br><span class="line"><span class="built_in">int</span> y = <span class="number">20</span>;</span><br><span class="line"><span class="built_in">string</span> nested = <span class="string">$&quot;The values are <span class="subst">&#123;x&#125;</span> and <span class="subst">&#123;y&#125;</span>, and their sum is <span class="subst">&#123;x + y&#125;</span>.&quot;</span>;</span><br><span class="line">Console.WriteLine(nested);</span><br><span class="line"><span class="comment">// 输出: The values are 10 and 20, and their sum is 30.</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-使用与其他字符串方法结合"><a href="#2-7-使用与其他字符串方法结合" class="headerlink" title="2.7. 使用与其他字符串方法结合"></a>2.7. 使用与其他字符串方法结合</h3><p>字符串插值可以与其他字符串操作方法结合使用，例如String.Format和拼接。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> firstName = <span class="string">&quot;Jane&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> lastName = <span class="string">&quot;Smith&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> fullName = <span class="string">$&quot;<span class="subst">&#123;firstName&#125;</span> <span class="subst">&#123;lastName&#125;</span>&quot;</span>.ToUpper();</span><br><span class="line">Console.WriteLine(fullName);</span><br><span class="line"><span class="comment">// 输出: JANE SMITH</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-8-插值与字符串连接性能比较"><a href="#2-8-插值与字符串连接性能比较" class="headerlink" title="2.8. 插值与字符串连接性能比较"></a>2.8. 插值与字符串连接性能比较</h3><p>字符串插值通常比字符串连接（+）更高效，尤其是当需要连接多个部分时。编译器会将插值字符串转换为String.Format调用，从而优化性能。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1 = <span class="string">&quot;Hello&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> str2 = <span class="string">&quot;World&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> concatenated = str1 + <span class="string">&quot; &quot;</span> + str2 + <span class="string">&quot;!&quot;</span>;</span><br><span class="line"><span class="built_in">string</span> interpolated = <span class="string">$&quot;<span class="subst">&#123;str1&#125;</span> <span class="subst">&#123;str2&#125;</span>!&quot;</span>;</span><br><span class="line"></span><br><span class="line">Console.WriteLine(concatenated);</span><br><span class="line"><span class="comment">// 输出: Hello World!</span></span><br><span class="line">Console.WriteLine(interpolated);</span><br><span class="line"><span class="comment">// 输出: Hello World!</span></span><br><span class="line"><span class="keyword">var</span> name = <span class="string">&quot;sam&quot;</span>;</span><br><span class="line">Console.WriteLine(<span class="string">$&quot;Hello <span class="subst">&#123;name&#125;</span>!&quot;</span>);  <span class="comment">//Hello sam!</span></span><br><span class="line">Console.WriteLine(<span class="string">$&quot;日期：<span class="subst">&#123;DateTime.Now.AddDays(<span class="number">1</span>):yyyy-MM-dd HH:mm:ss&#125;</span>&quot;</span>);  <span class="comment">//日期：2024-01-18 23:21:55!</span></span><br><span class="line">Console.WriteLine(<span class="string">$&quot;ThreadID：<span class="subst">&#123;Environment.CurrentManagedThreadId:<span class="number">0000</span>&#125;</span>&quot;</span>);  <span class="comment">//ThreadID：0001</span></span><br><span class="line">Console.WriteLine(<span class="string">$&quot;Length:<span class="subst">&#123;name.Length&#125;</span>&quot;</span>);  <span class="comment">//Length:3</span></span><br><span class="line">Console.WriteLine(<span class="string">$&quot;Length:<span class="subst">&#123;(name.Length&gt;<span class="number">3</span>?<span class="string">&quot;OK&quot;</span>:<span class="string">&quot;Error&quot;</span>)&#125;</span>&quot;</span>);  <span class="comment">//Length:Error</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-字符串支持任意字符"><a href="#3-字符串支持任意字符" class="headerlink" title="3. @字符串支持任意字符"></a>3. @字符串支持任意字符</h2><p>在 C# 中，@符号（也称为“逐字字符串”符号）用于声明一个字符串字面量，使得字符串中的特殊字符（如转义字符）被视为普通字符。这种方式有一些作用和用途，包括：</p>
+<ol>
+<li>多行字符串：使用@符号可以定义多行字符串，而无需使用换行符或转义字符。这在需要定义一些包含换行符的文本时非常方便。</li>
+<li>路径字符串：在定义文件路径或 URL 等包含反斜杠的字符串时，使用@符号可以避免双反斜杠“\”的写法，使得路径字符串更加清晰和易读。</li>
+<li>正则表达式：在编写正则表达式时，@符号可以帮助避免转义符号的使用，简化正则表达式的书写。</li>
+<li>特殊字符处理：包括在字符串中使用引号、换行符、回车符等特殊字符时，@符号可以使得这些字符被视为普通字符，而无需转义。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> path = <span class="string">@&quot;C:\myfolder\myfile.txt&quot;</span>; <span class="comment">// 定义文件路径</span></span><br><span class="line"><span class="built_in">string</span> multiLine = <span class="string">@&quot;多行</span></span><br><span class="line"><span class="string">字符串</span></span><br><span class="line"><span class="string">示例&quot;</span>; <span class="comment">// 定义多行字符串</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> regexPattern = <span class="string">@&quot;\d+&quot;</span>; <span class="comment">// 定义正则表达式</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> specialChars = <span class="string">@&quot;特殊字符：&quot;&quot;@&quot;&quot;符号&quot;</span>; <span class="comment">// 处理特殊字符</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-StringBuilder"><a href="#4-StringBuilder" class="headerlink" title="4. StringBuilder"></a>4. StringBuilder</h2><p><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder 类 (System.Text)</a></p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>表示可变字符字符串。 此类不能被继承。（sealed）</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">sealed</span> <span class="keyword">class</span> <span class="title">StringBuilder</span> : <span class="title">System.Runtime.Serialization.ISerializable</span></span><br></pre></td></tr></table></figure>
+
+<p>继承</p>
+<p><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.object?view=net-8.0">Object</a> -&gt;StringBuilder</p>
+<p>实现  <a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.runtime.serialization.iserializable?view=net-8.0">ISerializable</a></p>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><table>
+<thead>
+<tr>
+<th><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor">StringBuilder()</a></th>
+<th>初始化<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 类的新实例。</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor(system-int32)">StringBuilder(Int32)</a></td>
+<td>使用指定的容量初始化<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 类的新实例。<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.capacity?view=net-8.0#system-text-stringbuilder-capacity">Capacity</a></td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor(system-int32-system-int32)">StringBuilder(Int32, Int32)</a></td>
+<td>初始化<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 类的新实例，该类起始于指定容量并且可增长到指定的最大容量。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor(system-string)">StringBuilder(String)</a></td>
+<td>使用指定的字符串初始化<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 类的新实例。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor(system-string-system-int32)">StringBuilder(String, Int32)</a></td>
+<td>使用指定的字符串和容量初始化<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 类的新实例。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor(system-string-system-int32-system-int32-system-int32)">StringBuilder(String, Int32, Int32, Int32)</a></td>
+<td>从指定的子字符串和容量初始化<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 类的新实例。</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">StringBuilder</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">	m_MaxCapacity = <span class="built_in">int</span>.MaxValue;</span><br><span class="line">	m_ChunkChars = <span class="keyword">new</span> <span class="built_in">char</span>[<span class="number">16</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><table>
+<thead>
+<tr>
+<th><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.capacity?view=net-8.0#system-text-stringbuilder-capacity">Capacity</a></th>
+<th>获取、设置字符容量（实际占用内存），默认16，当内容增多容量不足时，会自动扩容。</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>[Chars<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.chars?view=net-8.0#system-text-stringbuilder-chars(system-int32)">Int32]</a></td>
+<td>索引器，可获取、设置字符</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.length?view=net-8.0#system-text-stringbuilder-length">Length</a></td>
+<td>获取或设置当前<a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder?view=net-8.0">StringBuilder</a> 对象的长度。</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.maxcapacity?view=net-8.0#system-text-stringbuilder-maxcapacity">MaxCapacity</a></td>
+<td>获取此实例的最大容量。</td>
+</tr>
+</tbody></table>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">Console.WriteLine(sb.Length); <span class="comment">// 输出 5</span></span><br><span class="line"></span><br><span class="line">sb.Length = <span class="number">10</span>; <span class="comment">// 扩展字符串长度为 10，多余部分用空格填充</span></span><br><span class="line">Console.WriteLine(sb.ToString()); <span class="comment">// 输出 &quot;Hello     &quot;</span></span><br><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">Console.WriteLine(sb.Capacity); <span class="comment">// 输出默认初始容量（16或更大，具体取决于实现）</span></span><br><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line"><span class="built_in">char</span> firstChar = sb[<span class="number">0</span>]; <span class="comment">// 获取第一个字符 &#x27;H&#x27;</span></span><br><span class="line">sb[<span class="number">1</span>] = <span class="string">&#x27;a&#x27;</span>; <span class="comment">// 将第二个字符改为 &#x27;a&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>各种Append方法都返回自身，可用来链式编程。</li>
+<li>StringBuilder 默认容量为16，内部有一个char数组m_ChunkChars（缓冲区）来存储字符内容，如下StringBuilder构造函数<a href="https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Text/StringBuilder.cs,d886fdc8f60a5f5f">源码</a>：</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">StringBuilder</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">	m_MaxCapacity = <span class="built_in">int</span>.MaxValue;</span><br><span class="line">	m_ChunkChars = <span class="keyword">new</span> <span class="built_in">char</span>[<span class="number">16</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>当不断追加字符串，容量不足会自动扩容，扩容的过程其实就是创建更大的字符数组（容量翻倍），把原来的值拷贝过来，这个过程会涉及数组对象创建、内存拷贝。</li>
+</ul>
+<p>📢 一般使用StringBuilder 建议尽量给一个合理的默认容量大小，尽量避免、减少频繁的扩容。</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><table>
+<thead>
+<tr>
+<th><strong>方法</strong></th>
+<th><strong>特点&#x2F;说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.-ctor?view=net-8.0#system-text-stringbuilder-ctor(system-int32)">StringBuilder(Int32)</a></td>
+<td>构造函数，参数指定初始容量capacity</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.append">Append(value)</a></td>
+<td>追加字符，很多重载版本，类似还有AppendFormat、AppendJoin</td>
+</tr>
+<tr>
+<td>AppendLine</td>
+<td>追加字符后，再追加一个换行符</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.insert">Insert (int index, value)</a></td>
+<td>指定位置插入字符内容</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.replace">Replace(Char, Char)</a></td>
+<td>查找替换字符（字符串）内容，会替换所有找到的字符内容</td>
+</tr>
+<tr>
+<td><a href="https://learn.microsoft.com/zh-cn/dotnet/api/system.text.stringbuilder.tostring?view=net-8.0#system-text-stringbuilder-tostring">ToString()</a></td>
+<td>将 StringBuilder 输出为一个字符串，一般是StringBuilder的命运终点。</td>
+</tr>
+</tbody></table>
+<ol>
+<li>**Append(value)**：Append 方法用于向 StringBuilder 对象的末尾添加字符、字符串、数字或其他数据类型的值。可以多次调用 Append 方法来逐步构建目标字符串。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">sb.Append(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">sb.Append(<span class="string">&quot; &quot;</span>);</span><br><span class="line">sb.Append(<span class="string">&quot;world&quot;</span>);</span><br><span class="line">cw(sb) <span class="comment">// Hello world</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>**Insert (int index, value)**：Insert 方法用于在指定位置插入字符、字符串或其他数据类型的值。可以在任意位置上插入内容，并可以多次调用 Insert 方法来插入多个内容。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">sb.Insert(<span class="number">5</span>, <span class="string">&quot; &quot;</span>);</span><br><span class="line">sb.Insert(<span class="number">6</span>, <span class="string">&quot;world&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>Remove</strong>：Remove 方法用于删除指定位置开始的指定长度的字符。可以删除单个字符或一段字符。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;Hello, world!&quot;</span>);</span><br><span class="line">sb.Remove(<span class="number">5</span>, <span class="number">7</span>); <span class="comment">// 从索引 5 开始，删除 7 个字符（包括空格），结果为 &quot;Hello!&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>**Replace(Char, Char)**：Replace 方法用于替换 StringBuilder 对象中指定位置开始的指定长度的字符为指定的新字符串。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;Hello, world!&quot;</span>);</span><br><span class="line">sb.Replace(<span class="string">&quot;world&quot;</span>, <span class="string">&quot;you&quot;</span>); <span class="comment">// 将 &quot;world&quot; 替换为 &quot;you&quot;，结果为 &quot;Hello, you!&quot;</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>Clear</strong>：Clear 方法用于清空 StringBuilder 对象中的所有字符，将其重置为空字符串。</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">sb.Clear(); <span class="comment">// 清空 StringBuilder 对象</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>ToString</strong></li>
+</ol>
+<p>StringBuilder 类中的 ToString 方法用于将 StringBuilder 对象中存储的字符序列转换为一个字符串，并返回该字符串。这个方法非常有用，因为它使您可以轻松地将 StringBuilder 对象用于构建字符串，然后将结果作为一个字符串来使用。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">sb.Append(<span class="string">&quot;Hello&quot;</span>);</span><br><span class="line">sb.Append(<span class="string">&quot; &quot;</span>);</span><br><span class="line">sb.Append(<span class="string">&quot;world&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> result = sb.ToString(); <span class="comment">// 将 StringBuilder 对象转换为字符串</span></span><br><span class="line">Console.WriteLine(result); <span class="comment">// 输出 &quot;Hello world&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>通过调用 ToString 方法，您可以将 StringBuilder 中构建的字符串结果提取出来并赋给一个新的字符串变量，然后可以像使用任何其他字符串一样使用它，比如输出到控制台、传递给方法等。</p>
+<p>需要注意的是，ToString 方法会返回一个新的字符串，而不会修改原始的 StringBuilder 对象。因此，在调用 ToString 方法之后，<strong>原始的</strong> <strong>StringBuilder</strong> <strong>对象仍然可以继续使用或修改。</strong></p>
+<h2 id="5-“””原始字符串字面量"><a href="#5-“””原始字符串字面量" class="headerlink" title="5. “””原始字符串字面量"></a>5. “””<a href="https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/tokens/raw-string">原始字符串字面量</a></h2><p>字符串字面量属于 string 类型且可以三种形式编写（原始、带引号和逐字）。</p>
+<p>原始字符串字面量从 C# 11 开始可用。 字符串字面量可以包含任意文本，而无需转义序列。 字符串字面量可以包括空格和新行、嵌入引号以及其他特殊字符。 原始字符串字面量用至少三个双引号 (“””) 括起来：</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">    This is a multi-line</span></span><br><span class="line"><span class="string">    string literal with the second line indented.</span></span><br><span class="line"><span class="string">    &quot;</span><span class="string">&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>甚至可以包含三个（或更多）双引号字符序列。 如果文本需要嵌入的引号序列，请根据需要使用更多引号开始和结束原始字符串字面量：</p>
+<p>C</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="string">&quot;&quot;</span><span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">    This raw string literal has four &quot;</span><span class="string">&quot;&quot;</span><span class="string">&quot;, count them: &quot;</span><span class="string">&quot;&quot;</span><span class="string">&quot; four!</span></span><br><span class="line"><span class="string">        embedded quote characters in a sequence. That&#x27;s why it starts and ends</span></span><br><span class="line"><span class="string">        with five double quotes.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        You could extend this example with as many embedded quotes as needed for your text.</span></span><br><span class="line"><span class="string">            &quot;</span><span class="string">&quot;&quot;</span><span class="string">&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>原始字符串字面量的起始和结束引号序列通常位于与嵌入文本不同的行上。 多行原始字符串字面量支持自带引号的字符串：</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> message = <span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">    &quot;</span>This <span class="keyword">is</span> a very important message.<span class="string">&quot;</span></span><br><span class="line"><span class="string">    &quot;</span><span class="string">&quot;&quot;</span>;</span><br><span class="line">    Console.WriteLine(message);</span><br><span class="line"><span class="comment">// output: &quot;This is a very important message.&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>当起始引号和结束引号在不同的行上时，则最终内容中不包括起始引号之后和结束引号之前的换行符。 右引号序列指示字符串字面量的最左侧列。 可以缩进原始字符串字面量以匹配整体代码格式：</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> message = <span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">    &quot;</span>This <span class="keyword">is</span> a very important message.<span class="string">&quot;</span></span><br><span class="line"><span class="string">    &quot;</span><span class="string">&quot;&quot;</span>;</span><br><span class="line">    Console.WriteLine(message);</span><br><span class="line"><span class="comment">// output: &quot;This is a very important message.&quot;</span></span><br><span class="line"><span class="comment">// The leftmost whitespace is not part of the raw string literal</span></span><br></pre></td></tr></table></figure>
+
+<p>保留结束引号序列右侧的列。 此行为将为 JSON、YAML 或 XML 等数据格式启用原始字符串，如以下示例所示：</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> json= <span class="string">&quot;&quot;</span><span class="string">&quot;</span></span><br><span class="line"><span class="string">&#123;</span></span><br><span class="line"><span class="string">    &quot;</span>prop<span class="string">&quot;: 0</span></span><br><span class="line"><span class="string">    &#125;</span></span><br><span class="line"><span class="string">&quot;</span><span class="string">&quot;&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果任何文本行扩展到右引号序列的左侧，编译器将发出错误。 左引号和右引号序列可以位于同一行上，前提是字符串字面量既不能以引号字符开头，也不能以引号字符结尾：</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> shortText = <span class="string">&quot;&quot;</span><span class="string">&quot;He said &quot;</span>hello!<span class="string">&quot; this morning.&quot;</span><span class="string">&quot;&quot;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>可以将原始字符串字面量与<a href="https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/tokens/interpolated">字符串内插</a>相结合，以在输出字符串中包含引号字符和大括号。</p>
+<p>带引号字符串括在双引号 (“) 内。</p>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="string">&quot;good morning&quot;</span>  <span class="comment">// a string literal</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="string、stringBuffer和stringBuilder"><a href="#string、stringBuffer和stringBuilder" class="headerlink" title="string、stringBuffer和stringBuilder"></a>string、stringBuffer和stringBuilder</h1><p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718604299535-21132c02-0275-46ab-89e9-ed1e7b7e1946.png" alt="img"></p>
+<h2 id="三者在执行速度方面的比"><a href="#三者在执行速度方面的比" class="headerlink" title="三者在执行速度方面的比"></a>三者在执行速度方面的比</h2><p>StringBuilder&gt;StringBuffer&gt; String</p>
+<h2 id="三者的继承结构"><a href="#三者的继承结构" class="headerlink" title="三者的继承结构"></a>三者的继承结构</h2><p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718604455113-1d2127b0-868a-4d5d-9def-7b005b80f3a4.png" alt="img"></p>
+<h2 id="三者的区别"><a href="#三者的区别" class="headerlink" title="三者的区别"></a>三者的区别</h2><p><img src="https://cdn.nlark.com/yuque/0/2024/png/42917490/1718604483572-a303064f-138a-47ca-b642-e127865428c8.png" alt="img"></p>
+<ul>
+<li>String不变性，字符序列不可变，对原管理中实例对象赋值，会重新开一个新的实例对象赋值新开的实例对象会等待被GC。string拼接要重新开辟空间，因为string原值不会改变，导致GC频繁，性能消耗大</li>
+<li>StringBuffer是字符串可变对象，可通过自带的StringBuffer,方法来改变并生成想要的字符串。对原实例对象做拼接的实例，不会生成新的实例对象。拼接使用StringBuilder和StringBuffer，只开辟一个内存空间，这是性能优化的点。</li>
+<li>StringBuilder是字符串可变对象，基本和StringBuilder相同。唯一的区别是StringBuffer是线程安全，相关方法前带<strong>synchronized关键字</strong>，一般用于多线程StringBuilder是非线程安全，所以性能略好，一般用于单线程</li>
+</ul>
+<h1 id="字符串格式化大全"><a href="#字符串格式化大全" class="headerlink" title="字符串格式化大全"></a>字符串格式化大全</h1><h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line">&#123;index/interpolationExpression [,alignment][:formatString]&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>,alignment可选，设置字符串的对齐长度，如果位数不够则空格补齐，正数部补左边，负数补右边。</li>
+<li>:formatString指定格式规则。一次只能指定一个格式规则，可和,alignment共存。</li>
+<li>index&#x2F;interpolationExpression：用于指定要插入的变量的索引或表达式。</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="comment">//,alignment 示例</span></span><br><span class="line"><span class="keyword">var</span> name = <span class="string">&quot;sam&quot;</span>;</span><br><span class="line"><span class="string">$&quot;name:<span class="subst">&#123;name,<span class="number">6</span>&#125;</span>.&quot;</span>;    <span class="comment">//字符长度6，前面补齐空格 //name:   sam.</span></span><br><span class="line"><span class="string">$&quot;name:<span class="subst">&#123;name,<span class="number">-6</span>&#125;</span>.&quot;</span>;   <span class="comment">//字符长度6，后面补齐空格 //name:sam   .</span></span><br><span class="line"><span class="string">&quot;1123+1 = &#123;(1223+1),6:#,#.##&#125;&quot;</span>;                <span class="comment">//1123+1 =  1,224</span></span><br><span class="line"><span class="built_in">string</span>.Format(<span class="string">&quot;1123+1 = &#123;0,6:#,#.##&#125;&quot;</span>,<span class="number">1223</span>+<span class="number">1</span>); <span class="comment">//1123+1 =  1,224</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>仅使用索引</strong>：</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> message = <span class="string">$&quot;<span class="subst">&#123;<span class="number">0</span>&#125;</span>: <span class="subst">&#123;<span class="number">1</span>:C2&#125;</span>&quot;</span>; <span class="comment">// 第一个变量输出的是索引为0的参数，第二个变量按货币格式输出</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>仅使用对齐</strong>：</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> message = <span class="string">$&quot;<span class="subst">&#123;name,<span class="number">-20</span>&#125;</span> <span class="subst">&#123;age,<span class="number">5</span>&#125;</span>&quot;</span>; <span class="comment">// 名字左对齐，占据20个字符位置，年龄右对齐，占据5个字符位置</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>仅使用格式化字符串</strong>：</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> message = <span class="string">$&quot;<span class="subst">&#123;number:D4&#125;</span>&quot;</span>; <span class="comment">// 按四位数格式输出变量</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>组合使用对齐和格式化字符串</strong>：</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> message = <span class="string">$&quot;<span class="subst">&#123;amount,<span class="number">10</span>:C2&#125;</span>&quot;</span>; <span class="comment">// 数字右对齐，占据10个字符位置，按货币格式输出</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="数值格式"><a href="#数值格式" class="headerlink" title="数值格式"></a>数值格式</h2><table>
+<thead>
+<tr>
+<th><strong>数值格式</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>E3&#x2F;e3</td>
+<td>科学计数法（指数），数字”3”为小数精度，$”{12345.2:E3}”<a href="https://1.235e+004/">&#x2F;&#x2F;1.235E+004</a>，E+4表示10的4次方；如果是E-4则表示为小数（除以10的四次方） 1E-4 &#x3D; 0.0001</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>定点格式，小数精度为”4”，位数不够后面补0，支持所有数值类型，$”{123.22F:F4}”<a href="https://123.0.8.152/">&#x2F;&#x2F;123.2200</a></td>
+</tr>
+<tr>
+<td>G4</td>
+<td>定点格式F+指数E的结合版，最多”4”个有效数字，超过就用科学计数法。”{123:G2}”<a href="https://1.2e+02/">&#x2F;&#x2F;1.2E+02</a>，$”{123:G4}” &#x2F;&#x2F;123</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>货币格式（支持千分位），数字“3”为小数位数，$”{123.346:C2}” &#x2F;&#x2F;¥123.35</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>百分比格式，数字乘以100后转换为百分数，数字“2”为小数位数，$”{0.2:P2}”<a href="https://20.0.0.0/">&#x2F;&#x2F;20.00</a>%</td>
+</tr>
+<tr>
+<td>N6</td>
+<td>数字格式化（支持千分位），小数位数为6，不够后面补0，$”{123:N6}” &#x2F;&#x2F;123.000000</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>整数定长格式，不够前面补0，只支持整数，$”{123:D6}” &#x2F;&#x2F;000123</td>
+</tr>
+<tr>
+<td>B</td>
+<td>输出为二进制格式，仅支持整数+.Net8，精度为字符串位数，不够补0，$”{123:B}” &#x2F;&#x2F;1111011</td>
+</tr>
+<tr>
+<td>X&#x2F;x</td>
+<td>输出为十六进制格式，仅支持整数+，精度为字符串位数，不够补0，$”{12:X4}” &#x2F;&#x2F;000C</td>
+</tr>
+</tbody></table>
+<p><strong>自定义的数值格式</strong>：</p>
+<h1 id="高性能字符串实践"><a href="#高性能字符串实践" class="headerlink" title="高性能字符串实践"></a>高性能字符串实践</h1><p><strong>提高string处理性能的核心就是：</strong> <strong>尽量减少临时字符串对象的创建</strong> <strong>。</strong></p>
+<ul>
+<li><strong>高频常用字符串（非字面量）可考虑主动驻留字符串，</strong>string.Intern(name)<strong>。</strong></li>
+<li><strong>字符串的比较、查找，优先用Span，或者尽量使用无文化语义的比较</strong>StringComparison.Ordinal<strong>。</strong></li>
+<li><strong>大量字符串连接使用StringBuilder，且尽量给定一个合适的容量大小，避免频繁的扩容。</strong></li>
+<li><strong>少量字符串连接用字符串插值即可，创建StringBuilder也是有成本的。</strong></li>
+<li><strong>如果有大量StringBuilder 的使用，可以考虑用StringBuilderCache，或池化StringBuilder。</strong></li>
+</ul>
+<h2 id="比较字符串-1"><a href="#比较字符串-1" class="headerlink" title="比较字符串"></a>比较字符串</h2><ul>
+<li><strong>字符串查找、拆分字符串、解析字符串，推荐使用Span，参考《</strong><a href="https://www.yuque.com/kanding/ktech/ghfspk998pp15k4f">高性能的Span、Memory</a>》。</li>
+<li><strong>查找、比较字符串，尽量指定 <strong>StringComparison</strong> 为 <strong>Ordinal</strong> 或 <strong>OrdinalIgnoreCase</strong>，采用无文化特征的比较性能更快。</strong></li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="built_in">string</span> str1=<span class="string">&quot;a&quot;</span>,str2 = <span class="string">&quot;b&quot;</span>;</span><br><span class="line"><span class="comment">//这种方式会产生新的字符串，不推荐</span></span><br><span class="line"><span class="keyword">if</span>(str1.ToLower() == str2.ToLower())&#123;&#125; </span><br><span class="line"><span class="comment">//推荐写法</span></span><br><span class="line"><span class="keyword">if</span>(<span class="built_in">string</span>.Compare(str1, str2, <span class="literal">true</span>)==<span class="number">0</span>)&#123;&#125; </span><br><span class="line"><span class="keyword">if</span>(<span class="built_in">string</span>.Equals(str1,str2,StringComparison.Ordinal))&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="字符串真的不能修改吗？"><a href="#字符串真的不能修改吗？" class="headerlink" title="字符串真的不能修改吗？"></a>字符串真的不能修改吗？</h2><p><strong>字符串其实也是可以修改的，当然是用非常规手段。</strong></p>
+<h3 id="用ref获取指定字符的引用地址（指针地址）。"><a href="#用ref获取指定字符的引用地址（指针地址）。" class="headerlink" title="用ref获取指定字符的引用地址（指针地址）。"></a>用<strong>ref</strong>获取指定字符的引用地址（指针地址）。</h3><figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Main</span>(<span class="params"><span class="built_in">string</span>[] args</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">var</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">    <span class="keyword">var</span> str2 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">	<span class="comment">//修改第0位</span></span><br><span class="line">    <span class="keyword">ref</span> <span class="keyword">var</span> c1 = <span class="keyword">ref</span> MemoryMarshal.GetReference&lt;<span class="built_in">char</span>&gt;(str1);</span><br><span class="line">	c1 = <span class="string">&#x27;H&#x27;</span>;</span><br><span class="line">	<span class="comment">//修改第一位</span></span><br><span class="line">	<span class="keyword">ref</span> <span class="keyword">var</span> c2 = <span class="keyword">ref</span> MemoryMarshal.GetReference&lt;<span class="built_in">char</span>&gt;(str1.AsSpan(<span class="number">1</span>));</span><br><span class="line">	c2 = <span class="string">&#x27;E&#x27;</span>;</span><br><span class="line">	Console.WriteLine(str1);<span class="comment">//输出：HEllo</span></span><br><span class="line">	Console.WriteLine(str2);<span class="comment">//输出：HEllo</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="直接使用指针修改字符值"><a href="#直接使用指针修改字符值" class="headerlink" title="直接使用指针修改字符值"></a>直接使用指针修改字符值</h3><figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Main</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">var</span> str1 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">	<span class="keyword">var</span> str2 = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">	<span class="keyword">unsafe</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">fixed</span> (<span class="built_in">char</span>* c = str2)</span><br><span class="line">		&#123;</span><br><span class="line">			c[<span class="number">0</span>] = <span class="string">&#x27;H&#x27;</span>;</span><br><span class="line">			c[<span class="number">1</span>] = <span class="string">&#x27;E&#x27;</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	Console.WriteLine(str1); <span class="comment">//HEllo</span></span><br><span class="line">	Console.WriteLine(str2); <span class="comment">//HEllo</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
     <title>Foreword</title>
     <url>/2024/06/04/Foreword/</url>
     <content><![CDATA[<p>如果六级词汇还没变得陌生，Foreword指的是前言的意思吧。搭建博客时令我费心的不是样式，而是内容的分类，对于自己人生，究竟该如何划分呈现才显得不至于让他人，让自己唾弃呢？不过思来想去，这故作伤感的生活点点滴滴也会沾污的污水一样，被自己下意识的拭去吧。自己从未幻想过雨后结晶的奇迹，不过还恳求允许我把遗书称作告白信吧，不然撞见遗书二字，除了给予人一种将死末路的印象的恐怖，似乎别无他物，只得让我稍加伪装，请权当单相思女子的痴情，像对待不被看在眼中的追求信，回绝我这封告白信吧，若是写给自己的信，我也同样应当给予拒绝，不是吗？</p>
