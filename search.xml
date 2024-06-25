@@ -1,14 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Foreword</title>
-    <url>/2024/06/04/Foreword/</url>
-    <content><![CDATA[<p>如果六级词汇还没变得陌生，Foreword指的是前言的意思吧。搭建博客时令我费心的不是样式，而是内容的分类，对于自己人生，究竟该如何划分呈现才显得不至于让他人，让自己唾弃呢？不过思来想去，这故作伤感的生活点点滴滴也会沾污的污水一样，被自己下意识的拭去吧。自己从未幻想过雨后结晶的奇迹，不过还恳求允许我把遗书称作告白信吧，不然撞见遗书二字，除了给予人一种将死末路的印象的恐怖，似乎别无他物，只得让我稍加伪装，请权当单相思女子的痴情，像对待不被看在眼中的追求信，回绝我这封告白信吧，若是写给自己的信，我也同样应当给予拒绝，不是吗？</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>C#扩展方法</title>
-    <url>/2024/06/24/C#%E6%89%A9%E5%B1%95%E6%96%B9%E6%B3%95/</url>
+    <title>扩展方法讲解</title>
+    <url>/2024/06/24/%E6%89%A9%E5%B1%95%E6%96%B9%E6%B3%95/</url>
     <content><![CDATA[<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p><strong>扩展方法是一种特殊类型的静态方法。</strong></p>
 <p>对于一个C#类型，如类（包括密封类）、值类型、接口等，扩展方法可以在不改变该类型源码的前提下，为它的实例提供新的成员。因此，若要为一个框架或第三方库的某个类型增加辅助功能，通过扩展方法就可以轻而易举地实现，这也是“扩展”的意义所在。</p>
 <p><strong>作用范围</strong>：所有.NET Framework 中已有的类型</p>
@@ -35,7 +29,7 @@
 <h2 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h2><ol>
 <li><strong>要为某个类型扩展功能，但没有其源码，比如某个框架或第三方库中的一个类；</strong></li>
 </ol>
-<p>例如，想要获取一个列表中所有的奇数项，就可以为IList<T>接口增加一个扩展方法，这里的IList<T>接口本身是.NET框架中的接口。</p>
+<p>例如，想要获取一个列表中所有的奇数项，就可以为IList<code>&lt;T&gt;</code>接口增加一个扩展方法，这里的IList<code>&lt;T&gt;</code>接口本身是.NET框架中的接口。</p>
 <figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title">IListExtentions</span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="title">IEnumerable</span>&lt;<span class="title">T</span>&gt; <span class="title">OddTrems</span>&lt;<span class="title">T</span>&gt;(<span class="params"><span class="keyword">this</span> IEnumerable&lt;T&gt;list</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(list ==<span class="literal">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> ArgumentNullException(<span class="keyword">nameof</span>(list))</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">for</span>(<span class="built_in">int</span> i = <span class="number">0</span>;i&lt;list.Count();i++)&#123;</span><br><span class="line">                <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>)</span><br><span class="line">                    <span class="keyword">yield</span> <span class="keyword">return</span> list.ElementAt(i);</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <ol>
@@ -49,7 +43,13 @@
 <p>通过扩展方法，我们可以为接口类型添加新的方法，在不破坏已有代码的前提下为接口类型添加额外的功能。</p>
 <figure class="highlight csharp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title">IPrintable</span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Print</span>()</span></span><br><span class="line"><span class="function">&#125;</span></span><br><span class="line"><span class="function"><span class="comment">//新的方法 PrintInColor()，用于打印带有颜色的文本。</span></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">PrintInColor</span>(<span class="params"><span class="keyword">this</span> IPrintable printable,ConsoleColor color</span>)</span>&#123;</span><br><span class="line">   Console.ForegroundColor = color;</span><br><span class="line">    printable.Print();</span><br><span class="line">    Console.ResetColor();.</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p>以下是定义与使扩展方法时的一些注意事项和最佳实践：<br>1、扩展方法本质上是为原有类型提供辅助功能，因此，在创建时，要确保它具有实际意义，且遵循单一职责原则；也即，不能过度使用扩展方法并且它能够完成一个具体、完整的功能；<br>2、扩展方法本身具有通用性，因此，它里面应避免特定的业务数据类型及其相关逻辑；<br>3、如果为接口增加扩展方法，扩展方法的命名空间可以与接口的一致；否则，应尽量避免与原类型写在同一命名空间下，这样会“污染”原类型。建议的做法是为扩展方法所在的类设定一个单独的命名空间，如：<Company>.<Product>.Extentions。不过，这样做也有缺点：在操作原有类型的实例时，如果不引用扩展方法所在的命名空间，那么，它就不容易被发现，而解决这个问题的办法是，尽量将扩展方法文档化，并告诉项目组的其他开发人员；<br>4、为接口增加扩展方法后，则所有实现此接口的类都会包含该扩展方法；<br>5、在扩展方法中，要对第一个参数进行非空检查，如果为空，应抛出ArgumentNullException（参数为空）异常。</p>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p>以下是定义与使扩展方法时的一些注意事项和最佳实践：<br>1、扩展方法本质上是为原有类型提供辅助功能，因此，在创建时，要确保它具有实际意义，且遵循单一职责原则；也即，不能过度使用扩展方法并且它能够完成一个具体、完整的功能；<br>2、扩展方法本身具有通用性，因此，它里面应避免特定的业务数据类型及其相关逻辑；<br>3、如果为接口增加扩展方法，扩展方法的命名空间可以与接口的一致；否则，应尽量避免与原类型写在同一命名空间下，这样会“污染”原类型。建议的做法是为扩展方法所在的类设定一个单独的命名空间，如：<code>&lt;Company&gt;</code>.<code>&lt;Product&gt;</code>.Extentions。不过，这样做也有缺点：在操作原有类型的实例时，如果不引用扩展方法所在的命名空间，那么，它就不容易被发现，而解决这个问题的办法是，尽量将扩展方法文档化，并告诉项目组的其他开发人员；<br>4、为接口增加扩展方法后，则所有实现此接口的类都会包含该扩展方法；<br>5、在扩展方法中，要对第一个参数进行非空检查，如果为空，应抛出ArgumentNullException（参数为空）异常。</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>Foreword</title>
+    <url>/2024/06/04/Foreword/</url>
+    <content><![CDATA[<p>如果六级词汇还没变得陌生，Foreword指的是前言的意思吧。搭建博客时令我费心的不是样式，而是内容的分类，对于自己人生，究竟该如何划分呈现才显得不至于让他人，让自己唾弃呢？不过思来想去，这故作伤感的生活点点滴滴也会沾污的污水一样，被自己下意识的拭去吧。自己从未幻想过雨后结晶的奇迹，不过还恳求允许我把遗书称作告白信吧，不然撞见遗书二字，除了给予人一种将死末路的印象的恐怖，似乎别无他物，只得让我稍加伪装，请权当单相思女子的痴情，像对待不被看在眼中的追求信，回绝我这封告白信吧，若是写给自己的信，我也同样应当给予拒绝，不是吗？</p>
 ]]></content>
   </entry>
 </search>
