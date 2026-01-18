@@ -2,18 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://mementomori.com.cn/works/index.html</loc>
+    <loc>https://mementomori.com.cn/2026/01/03/%E6%89%8B%E7%B4%99/</loc>
     
-    <lastmod>2026-01-16</lastmod>
+    <lastmod>2026-01-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://mementomori.com.cn/2026/01/03/%E6%89%8B%E7%B4%99/</loc>
+    <loc>https://mementomori.com.cn/works/index.html</loc>
     
-    <lastmod>2026-01-16</lastmod>
+    <lastmod>2026-01-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -130,7 +130,7 @@
 
   <url>
     <loc>https://mementomori.com.cn/</loc>
-    <lastmod>2026-01-16</lastmod>
+    <lastmod>2026-01-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
